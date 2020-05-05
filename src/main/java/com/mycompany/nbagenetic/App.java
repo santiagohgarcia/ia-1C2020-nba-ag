@@ -33,8 +33,6 @@ public class App {
         List<Player> players = playersRepository.getAllPlayers();
         
         
-         String a = "a";
-        
         /*// 1.) Define the genotype (factory) suitable
         //     for the problem.
         Factory<Genotype<BitGene>> gtf =
