@@ -38,7 +38,12 @@ public class App {
             points += players.get(i).get().getOverallPoints();
         }
 
-        return points;
+        if(points > 0){ 
+            return points;
+        }else{
+        return -1;
+        }
+       
     }
 
     public static void main(String[] args) {
@@ -61,7 +66,7 @@ public class App {
         // 4.) Start the execution (evolution) and
         //     collect the result.
         Genotype<BitGene> result = engine.stream()
-                .limit(9000)
+                .limit(100)
                 .collect(EvolutionResult.toBestGenotype());
 
         List<Optional<Player>> players = chromosomeToPlayers(result);
@@ -98,9 +103,9 @@ public class App {
 
         List<Optional<Player>> players = new ArrayList<>();
 
-        while (index < chromosomeLength) {
+        while (index <= chromosomeLength) {
 
-            var playerBits = chromosome.instances().skip(index).limit(5).collect(Collectors.toList());
+            var playerBits = chromosome.instances().skip(index).limit(bitsPerPlayer).collect(Collectors.toList());
 
             var playersBinaryString = "";
 
