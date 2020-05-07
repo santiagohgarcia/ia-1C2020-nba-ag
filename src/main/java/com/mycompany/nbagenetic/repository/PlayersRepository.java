@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -38,17 +39,21 @@ public class PlayersRepository {
 
         Path path = Paths.get("src\\main\\java\\com\\mycompany\\nbagenetic\\repository\\players.csv");
 
-        try ( BufferedReader br = Files.newBufferedReader(path, StandardCharsets.US_ASCII)) {
+        if (players.size() <= 0) {
 
-            String line = br.readLine();
-            //Skip first line
-            line = br.readLine();
-            while (line != null) {
+            try ( BufferedReader br = Files.newBufferedReader(path, StandardCharsets.US_ASCII)) {
 
-                String[] attributes = line.split(",");
-                
+                String line = br.readLine();
+                //Skip first line
+                line = br.readLine();
+
+                Integer idCount = 1;
+                while (line != null) {
+
+                    String[] attributes = line.split(",");
+
                     Player player = new Player(
-                            Integer.parseInt(attributes[0]), //id
+                            idCount++, //id
                             attributes[1], //name
                             attributes[3], //team
                             Double.parseDouble(attributes[4]), //overallPoints
@@ -58,15 +63,18 @@ public class PlayersRepository {
                     );
 
                     players.add(player);
-                
-                line = br.readLine();
-            }
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
 
+                    line = br.readLine();
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
         return players;
 
     }
 
+    public Optional<Player> getPlayerById(int id){
+        return this.getAllPlayers().stream().filter(player -> player.getId().equals(id)).findAny();
+    }
 }

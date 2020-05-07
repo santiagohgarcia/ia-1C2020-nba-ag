@@ -1,3 +1,4 @@
+com\mycompany\nbagenetic\domain\Team.class
 com\mycompany\nbagenetic\App.class
 com\mycompany\nbagenetic\domain\Player.class
 com\mycompany\nbagenetic\repository\PlayersRepository.class
