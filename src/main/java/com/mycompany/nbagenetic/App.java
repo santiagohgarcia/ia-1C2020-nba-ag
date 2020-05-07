@@ -98,23 +98,21 @@ public class App {
 
         List<Optional<Player>> players = new ArrayList<>();
 
-        var playerBits = chromosome.instances().collect(Collectors.toList());
-
-        var playersBinaryString = "";
-
-        for (int i = 0; i < playerBits.size(); i++) {
-            if (playerBits.get(i).gene().bit()) {
-                playersBinaryString += "1";
-            } else {
-                playersBinaryString += "0";
-            }
-        }
-
         while (index < chromosomeLength) {
 
-            var idBinaryString = playersBinaryString.substring(index, bitsPerPlayer);
+            var playerBits = chromosome.instances().skip(index).limit(5).collect(Collectors.toList());
 
-            int playerId = Integer.parseInt(idBinaryString, 2);
+            var playersBinaryString = "";
+
+            for (int i = 0; i < playerBits.size(); i++) {
+                if (playerBits.get(i).gene().bit()) {
+                    playersBinaryString += "1";
+                } else {
+                    playersBinaryString += "0";
+                }
+            }
+
+            int playerId = Integer.parseInt(playersBinaryString, 2);
 
             players.add(playersRepository.getPlayerById(playerId));
 
