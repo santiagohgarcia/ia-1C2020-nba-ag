@@ -19,6 +19,9 @@ public class Player {
     private String secondaryPosition;
     private Double height;
 
+    public Player() {
+    }
+    
     public Player(Integer id, String name, String team, Double overallPoints, String primaryPosition, String secondaryPosition, Double height) {
         this.id = id;
         this.name = name;
