@@ -8,7 +8,6 @@ package com.mycompany.nbagenetic;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.mycompany.nbagenetic.domain.Player;
@@ -19,6 +18,7 @@ import io.jenetics.BitGene;
 import io.jenetics.Genotype;
 import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
+import io.jenetics.engine.EvolutionStatistics;
 import io.jenetics.util.Factory;
 
 public class App {
@@ -43,7 +43,7 @@ public class App {
         int points = 0;
         for(Player p: players) {
         	if(p == null || (p != null && playersMap.get(p.getId()) == null))
-        		return -1;
+        		return -20;
         	
         	Player realPlayer = playersMap.get(p.getId());
         	points += realPlayer.getOverallPoints();
@@ -99,11 +99,16 @@ public class App {
         Engine<BitGene, Integer> engine = Engine
                 .builder(App::eval, gtf)
                 .build();
+        
+        final EvolutionStatistics <Integer , ?>
+        statistics = EvolutionStatistics.ofNumber() ;
 
         // 4.) Start the execution (evolution) and
         //     collect the result.
         Genotype<BitGene> result = engine.stream()
                 .limit(MAX_RUNS)
+                // Update  the  evaluation  statistics  after each  generation
+                .peek(statistics)
                 .collect(EvolutionResult.toBestGenotype());
 
         List<Player> players = chromosomeToPlayers(result);
@@ -173,6 +178,15 @@ public class App {
         }
 
         return players;
+    }
+    
+    private static boolean stopCriteria() {
+    	
+    	
+    	
+    	
+    	
+    	return true;
     }
 
 }

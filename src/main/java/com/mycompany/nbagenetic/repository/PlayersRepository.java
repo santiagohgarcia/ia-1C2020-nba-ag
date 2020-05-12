@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.mycompany.nbagenetic.domain.Player;
@@ -236,6 +237,78 @@ public class PlayersRepository {
             }
         }
         MAX_PLAYER_ID = idCount;
+        
+        
+        exportarSQL(allPlayers);
+        
         return allPlayers;
     }
+    
+    
+    private void exportarSQL(HashMap<Integer,Player> players) {
+    	String rutaSQL = "src\\main\\java\\com\\mycompany\\nbagenetic\\repository\\INSERTS-players.sql";
+    	PlainTextUtils ptu = new PlainTextUtils(rutaSQL);
+
+    	try {
+    		ptu.fopen(rutaSQL,Boolean.FALSE);
+
+    		/*
+    		 * 
+    		 *  private Integer id;
+    	    private String name;
+    	    private String team;
+    	    private Double overallPoints;
+    		private String primaryPosition;
+    		private String secondaryPosition;
+    		private Double height;
+    		 * */
+
+    		/*
+    		CREATE DATABASE nba;
+
+
+    		CREATE TABLE nba.PLAYER (
+    		id INT(10) NOT NULL PRIMARY KEY,
+    		NAME VARCHAR(255) NOT NULL,
+    		team VARCHAR(255) NOT NULL,
+    		overallPoints FLOAT NOT NULL,
+    		primaryPosition VARCHAR(255) NOT NULL,
+    		secondaryPosition VARCHAR(255) NOT NULL,
+    		height  FLOAT NOT NULL
+    		) ENGINE MYISAM; 
+    		*/
+    		
+    		ptu.fputs("CREATE DATABASE nba;");
+    		
+    		ptu.fputs("CREATE TABLE nba.PLAYER (\n" + 
+    				"    		id INT(10) NOT NULL PRIMARY KEY,\n" + 
+    				"    		NAME VARCHAR(255) NOT NULL,\n" + 
+    				"    		team VARCHAR(255) NOT NULL,\n" + 
+    				"    		overallPoints FLOAT NOT NULL,\n" + 
+    				"    		primaryPosition VARCHAR(255) NOT NULL,\n" + 
+    				"    		secondaryPosition VARCHAR(255) NOT NULL,\n" + 
+    				"    		height  FLOAT NOT NULL\n" + 
+    				"    		) ENGINE MYISAM;");
+    		
+    		
+    		for(Map.Entry<Integer, Player> entry : players.entrySet()) {
+    			Player p = entry.getValue();  
+    			ptu.fputs("INSERT INTO PLAYER (id,name,team,overallPoints,primaryPosition,secondaryPosition,height) VALUES "
+    					+ "('" + p.getId() 
+    					+ "','" + p.getName().replace("'", " ") 
+    					+ "','" + p.getTeam().replace("'", " ")
+    					+ "','" + p.getOverallPoints() 
+    					+ "','" + p.getPrimaryPosition() 
+    					+ "','" + p.getSecondaryPosition()
+    					+ "','" + p.getHeight()
+    					+ "');");
+    		}
+
+    		ptu.fclose();
+    	}catch(Exception ex) {
+    		ex.printStackTrace();
+    	}
+
+    }
+    
 }
