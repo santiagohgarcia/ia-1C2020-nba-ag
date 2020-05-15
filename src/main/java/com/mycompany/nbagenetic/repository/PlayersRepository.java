@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.mycompany.nbagenetic.conversion.Conversion;
 import com.mycompany.nbagenetic.domain.Player;
 
 /**
@@ -197,13 +198,13 @@ public class PlayersRepository {
         return this.getAllPlayers().stream().filter(player -> player.getId().equals(id)).findAny();
     }
     
-    public HashMap<Integer,Player> getAllPlayersMap() {
+    public HashMap<String,Player> getAllPlayersMap() {
 
         Path path = Paths.get("src\\main\\java\\com\\mycompany\\nbagenetic\\repository\\players.csv");
         Integer idCount = 1;
         
         //id, player
-        HashMap<Integer,Player> allPlayers = new HashMap<Integer,Player>(); 
+        HashMap<String,Player> allPlayers = new HashMap<String,Player>(); 
         
         if (players.size() <= 0) {
 
@@ -228,7 +229,9 @@ public class PlayersRepository {
                             Double.parseDouble(attributes[8]) //height
                     );
 
-                    allPlayers.put(player.getId(),player);
+                    //pongo el id en binario para buscarlo mas tarde directamente
+                    //en eval sin convertir en cada corrida <--- AL PEDO
+                    allPlayers.put(Conversion.enteroBase10AStringBase2(player.getId()),player);
 
                     line = br.readLine();
                 }
@@ -245,7 +248,7 @@ public class PlayersRepository {
     }
     
     
-    private void exportarSQL(HashMap<Integer,Player> players) {
+    private void exportarSQL(HashMap<String,Player> players) {
     	String rutaSQL = "src\\main\\java\\com\\mycompany\\nbagenetic\\repository\\INSERTS-players.sql";
     	PlainTextUtils ptu = new PlainTextUtils(rutaSQL);
 
@@ -291,7 +294,7 @@ public class PlayersRepository {
     				"    		) ENGINE MYISAM;");
     		
     		
-    		for(Map.Entry<Integer, Player> entry : players.entrySet()) {
+    		for(Map.Entry<String, Player> entry : players.entrySet()) {
     			Player p = entry.getValue();  
     			ptu.fputs("INSERT INTO PLAYER (id,name,team,overallPoints,primaryPosition,secondaryPosition,height) VALUES "
     					+ "('" + p.getId() 
