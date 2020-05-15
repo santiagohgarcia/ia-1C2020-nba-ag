@@ -31,13 +31,14 @@ public class App {
 	private static final Integer MAX_RUNS = 100;
 	private static final Integer TEAM_SIZE = 5;
 	private static HashMap<String,Player> playersMap = null;
+	private static Integer cicloCorridaAptitud = 0;
 	
 
     // 2.) Definition of the fitness function.
     private static int eval(Genotype<BitGene> gt) {
 
         
-    	Log.loguear("Evaluando funcion de aptitud");
+    	Log.loguear("Evaluando funcion de aptitud ciclo " + cicloCorridaAptitud);
     	
     	List<Player> players = Conversion.chromosomeToPlayers(playersMap,gt);
 
@@ -47,18 +48,26 @@ public class App {
         
         int points = 0;
         for(Player p: players) {
-        	if(p == null || (p != null && playersMap.get(Conversion.enteroBase10AStringBase2(p.getId())) == null))
+        	if(p == null || (p != null && playersMap.get(Conversion.enteroBase10AStringBase2(p.getId())) == null)) {
+        		Log.loguear("Aptitud: descartando por combinacion invalida ciclo " + cicloCorridaAptitud);
+        		cicloCorridaAptitud++;
         		return -20;
+        	}
         	
         	Player realPlayer = playersMap.get(Conversion.enteroBase10AStringBase2(p.getId()));
         	points += realPlayer.getOverallPoints();
         }
         
-        Log.loguear("Aptitud: puntos obtenidos: " + points);
+        Log.loguear("Aptitud: puntos obtenidos: " + points + " , ciclo " + cicloCorridaAptitud);
         
-        if(points > 0) 
-            return points;
+        if(points > 0) { 
+        	cicloCorridaAptitud++;
+        	return points;
+        }
         
+        
+        Log.loguear("Aptitud: descartando por puntos < 0 , ciclo " + cicloCorridaAptitud);
+        cicloCorridaAptitud++;
         return -1;
     }
 
