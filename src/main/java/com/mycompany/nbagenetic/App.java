@@ -51,7 +51,7 @@ public class App {
         	if(p == null || (p != null && playersMap.get(Conversion.enteroBase10AStringBase2(p.getId())) == null)) {
         		Log.loguear("Aptitud: descartando por combinacion invalida ciclo " + cicloCorridaAptitud);
         		cicloCorridaAptitud++;
-        		return -20;
+        		return -300;
         	}
         	
         	Player realPlayer = playersMap.get(Conversion.enteroBase10AStringBase2(p.getId()));
@@ -68,7 +68,7 @@ public class App {
         
         Log.loguear("Aptitud: descartando por puntos < 0 , ciclo " + cicloCorridaAptitud);
         cicloCorridaAptitud++;
-        return -1;
+        return -300;
     }
 
     public static void main(String[] args) {
