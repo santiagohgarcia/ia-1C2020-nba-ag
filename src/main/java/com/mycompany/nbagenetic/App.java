@@ -5,25 +5,26 @@
  */
 
 package com.mycompany.nbagenetic;
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
+import com.mycompany.nbagenetic.domain.Player;
+import com.mycompany.nbagenetic.repository.PlayersRepository;
 import io.jenetics.*;
 import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.engine.EvolutionStatistics;
 
-import com.mycompany.nbagenetic.repository.PlayersRepository;
-import com.mycompany.nbagenetic.domain.Player;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static io.jenetics.engine.Limits.bySteadyFitness;
 
 public class App {
 
+    public static final int TEAM_SIZE = 5;
     private static List<Player> allPlayers;
 
     // 2.) Definition of the fitness function.
@@ -33,21 +34,28 @@ public class App {
 
         List<Integer> possibleIDs = Arrays.stream(chromosome.toArray()).boxed().collect(Collectors.toList());
 
-        AtomicReference<Integer> fitnessValueAccumulator = new AtomicReference<>(0);
-
-        //APTITUD = 0.5 * ALTURA + PUNTAJE_TOTAL
-        Consumer<Player> addToFitnessValue = (player) ->
-                fitnessValueAccumulator.accumulateAndGet(Double.valueOf(player.getHeight() * 0.5 + player.getOverallPoints()).intValue(), Integer::sum);
-
-        Runnable setFitnessToNegative = () -> fitnessValueAccumulator.set(-100000);
+        List<Player> players = new ArrayList<>();
 
         possibleIDs.forEach(possibleID ->
                 allPlayers.stream()
                         .filter(player -> player.getId().equals(possibleID))
                         .findFirst()
-                        .ifPresentOrElse(addToFitnessValue, setFitnessToNegative));
+                        .ifPresent(players::add));
 
-        return fitnessValueAccumulator.get();
+        List<Supplier<Boolean>> conditions = Arrays.asList(
+                () -> players.size() == TEAM_SIZE,
+                () -> players.stream().map(Player::getTeam).distinct().count() == TEAM_SIZE,
+                () -> players.stream().map(Player::getPrimaryPosition).distinct().count() == TEAM_SIZE,
+                () -> players.stream().map(Player::getSecondaryPosition).distinct().count() == TEAM_SIZE
+                //() -> players.stream().map(Player::getConference).distinct().count() == TEAM_SIZE - 2 // TODO esta condición no la podemos implementar porque falta la columna del excel
+        );
+
+        if(!conditions.stream().allMatch(Supplier::get)) return -100000;
+
+        //APTITUD = 0.5 * ALTURA + PUNTAJE_TOTAL
+        Function<Player, Integer> playerFitnessValue = (player) -> Double.valueOf(player.getHeight() * 0.5 + player.getOverallPoints()).intValue();
+
+        return players.stream().mapToInt(playerFitnessValue::apply).sum();
     }
  
     public static void main(String[] args) {
@@ -60,7 +68,7 @@ public class App {
         //1.) Define the genotype (factory) suitable
         //     for the problem.
         Genotype<IntegerGene> gtf =
-                Genotype.of(IntegerChromosome.of(1000, 1200, 6));
+                Genotype.of(IntegerChromosome.of(1, 1223, TEAM_SIZE));
 
         //gtf.instances().forEach(genotype -> System.out.println("Original:\n" + genotype));
 
@@ -69,13 +77,14 @@ public class App {
         // 3.) Create the execution environment.
         Engine<IntegerGene, Integer> engine = Engine
                 .builder(App::eval, gtf)
+                .alterers(new Mutator<>(0.115), new SinglePointCrossover<>(0.16))
                 .build();
 
         // 4.) Start the execution (evolution) and
         //     collect the result.
         Phenotype<IntegerGene, Integer> result = engine.stream()
                 .limit(bySteadyFitness(7))
-                .limit(20)
+                .limit(10000)
                 .peek(statistics)
                 .collect(EvolutionResult.toBestPhenotype());
 
@@ -100,25 +109,4 @@ public class App {
         System.out.println("Hello World:\n" + result);*/
          //System.out.println("Hello World:\n" + result);
     }
-
-    private static BitChromosome playerChromosome() {
-        return BitChromosome.of(7, 0.5);
-    }
 }
-
-/*
-
-    List<BitChromosome> chromosomes = new ArrayList<>();
-        IntStream.rangeClosed(1, 5).forEach(i -> chromosomes.add(playerChromosome()));
-                Factory<Genotype<BitGene>> gtf =
-        Genotype.of(chromosomes);
-
-        Engine<BitGene, Integer> engine = Engine
-        .builder(App::eval, gtf)
-        .build();
-
-        Genotype<BitGene> result = engine.stream()
-        .limit(100)
-        .collect(EvolutionResult.toBestGenotype());
-
-        System.out.println("Hello World:\n" + result);*/
