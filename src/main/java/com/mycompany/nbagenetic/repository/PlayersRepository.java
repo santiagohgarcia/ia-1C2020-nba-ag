@@ -36,7 +36,7 @@ public class PlayersRepository {
 
     public List<Player> getAllPlayers() {
 
-        Path path = Paths.get("src\\main\\java\\com\\mycompany\\nbagenetic\\repository\\players.csv");
+        Path path = Paths.get("src/main/java/com/mycompany/nbagenetic/repository/players.csv");
 
         try ( BufferedReader br = Files.newBufferedReader(path, StandardCharsets.US_ASCII)) {
 
