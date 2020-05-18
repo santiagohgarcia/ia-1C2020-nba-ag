@@ -38,10 +38,11 @@ public class App {
 	private static final Integer TEAM_SIZE = 5;
 	private static HashMap<String,Player> playersMap = null;
 	private static Integer cicloCorridaAptitud = 0;
+	//es static y se comparte en eval, mientras sea readonly
 	private static Configuracion cfg = null;
 
     // 2.) Definition of the fitness function.
-    private static int eval(Genotype<BitGene> gt) {
+    private int eval(Genotype<BitGene> gt) {
     	Log.loguear("Evaluando funcion de aptitud ciclo " + cicloCorridaAptitud);
     	
     	List<Player> players = Conversion.chromosomeToPlayers(playersMap,gt);
@@ -145,9 +146,11 @@ public class App {
         Factory<Genotype<BitGene>> gtf
                 = Genotype.of(BitChromosome.of(CHROMOSOME_SIZE*cfg.getTamanioEquipo(), 0.5));
 
+        App app = new App();
+        
         // 3.) Create the execution environment.
         Engine<BitGene, Integer> engine = Engine
-                .builder(App::eval, gtf)
+                .builder(app::eval, gtf)
               //Experimental 1
                 .populationSize(cfg.getTamanioPoblacion())
                 //Experimental 2
