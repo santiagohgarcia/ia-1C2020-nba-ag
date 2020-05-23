@@ -90,7 +90,7 @@ public class App {
             fitnessValue += p.getOverallPoints().intValue();
         	
             //EVALUAR ALTURA, evaluada al 50%
-            fitnessValue += p.getHeight().intValue() * ( 1 / 2 ) ;
+            fitnessValue += ( p.getHeight().intValue() / 2 ) ;
         }
         
         Log.loguear("Aptitud: puntos obtenidos: " + fitnessValue + " , ciclo " + cicloCorridaAptitud);
@@ -154,7 +154,7 @@ public class App {
         // 4.) Start the execution (evolution) and
         //     collect the result.
         Genotype<BitGene> result = engine.stream()
-                .limit(Limits.byFitnessThreshold(494))
+                .limit(Limits.byFitnessThreshold(690))
                 //.limit(5000)
                 //.limit(cfg.getMaximoCorridas())
                 // Update  the  evaluation  statistics  after each  generation
