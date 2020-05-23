@@ -91,6 +91,42 @@ public class App {
         posicionesNecesarias.add("SF");
         posicionesNecesarias.add("PF");
         
+        Set<String> equiposESTE = new HashSet<String>();
+        equiposESTE.add("Miami Heat");
+        equiposESTE.add("Boston Celtics");
+        equiposESTE.add("Philadelphia 76ers");
+        equiposESTE.add("Detroit Pistons");
+        equiposESTE.add("Atlanta Hawks");
+        equiposESTE.add("Chicago Bulls");
+        equiposESTE.add("Orlando Magic");
+        equiposESTE.add("'01-'02 New Jersey Nets");
+        equiposESTE.add("New York Knicks");
+        equiposESTE.add("Toronto Raptors");
+        equiposESTE.add("Washington Wizards");
+        equiposESTE.add("'88-'89 Detroit Pistons");
+        equiposESTE.add("Milwaukee Bucks");
+        equiposESTE.add("'84-'85 Milwaukee Bucks");
+        equiposESTE.add("Cleveland Cavaliers");
+        equiposESTE.add("'85-'86 Atlanta Hawks");
+        equiposESTE.add("Indiana Pacers");
+        equiposESTE.add("'12-'13 Miami Heat");
+        equiposESTE.add("'92-'93 Charlotte Hornets");
+        equiposESTE.add("'11-'12 New York Knicks");
+        equiposESTE.add("Brooklyn Nets");
+        equiposESTE.add("'92-'93 Chicago Bulls");
+        equiposESTE.add("'07-'08 Boston Celtics");
+        equiposESTE.add("'85-'86 Boston Celtics");
+        equiposESTE.add("'99-'00 Toronto Raptors");
+        equiposESTE.add("'10-'11 Chicago Bulls");
+        equiposESTE.add("'76-'77 Philadelphia 76ers");
+        equiposESTE.add("'05-'06 Miami Heat");
+        equiposESTE.add("'03-'04 Detroit Pistons");
+        equiposESTE.add("'94-'95 Orlando Magic");
+        equiposESTE.add("'06-'07 Cleveland Cavaliers");
+        equiposESTE.add("'95-'96 Chicago Bulls");
+        equiposESTE.add("'94-'95 New York Knicks");
+        equiposESTE.add("'88-'89 Chicago Bulls");
+
         //Verificar que se cumplan 5 posiciones distintas, 5 jugadores distintos y 5 equipos distintos
         Set<String> equiposSet = new HashSet<String>();
         Set<String> posicionesSet = new HashSet<String>(); 
@@ -120,6 +156,18 @@ public class App {
         if(!posicionesSet.containsAll(posicionesNecesarias)){
             return false;
         }
+        
+        //La cantidad de equipos de la conferencia ESTE tiene que ser entre 2 y 3
+        //Si existen 4 equipos o mas de la conf ESTE => retornar FALSE
+        //Si existen 1 equipos o menos de la conf ESTE => la conf OESTE tiene muchos jugadores, tambien retornamos FALSE
+        var equiposDeConfESTE = equiposSet.stream().filter(e -> {
+           return equiposESTE.contains(e);
+        }).collect(Collectors.toSet());
+        
+        if( !(equiposDeConfESTE.size() >= 2 && equiposDeConfESTE.size() <= 3 ) ){
+            return false;
+        }
+        
         
         return true;
     }
