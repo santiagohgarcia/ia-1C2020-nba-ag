@@ -16,18 +16,26 @@ import com.mycompany.nbagenetic.conversion.Conversion;
 import com.mycompany.nbagenetic.domain.Player;
 import com.mycompany.nbagenetic.log.Log;
 import com.mycompany.nbagenetic.repository.PlayersRepository;
+import io.jenetics.AnyGene;
 
 import io.jenetics.BitChromosome;
 import io.jenetics.BitGene;
 import io.jenetics.Genotype;
 import io.jenetics.Mutator;
+import io.jenetics.Optimize;
 import io.jenetics.RouletteWheelSelector;
 import io.jenetics.SinglePointCrossover;
 import io.jenetics.TournamentSelector;
+import io.jenetics.engine.Constraint;
 import io.jenetics.engine.Engine;
 import io.jenetics.engine.EvolutionResult;
 import io.jenetics.engine.EvolutionStatistics;
+import io.jenetics.engine.Limits;
 import io.jenetics.util.Factory;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.Collectors; 
 
 public class App {
 	
@@ -43,84 +51,51 @@ public class App {
 
     // 2.) Definition of the fitness function.
     private int eval(Genotype<BitGene> gt) {
-    	Log.loguear("Evaluando funcion de aptitud ciclo " + cicloCorridaAptitud);
+    	//Log.loguear("Evaluando funcion de aptitud ciclo " + cicloCorridaAptitud);
     	
     	List<Player> players = Conversion.chromosomeToPlayers(playersMap,gt);
-//        if (!players.stream().allMatch(player -> player.isPresent())) {
-//            return -1;
-//        }
-    	System.out.println("Longitud lista players: " + players.size());
+
+    	//System.out.println("Longitud lista players: " + players.size());
+        
+        if(!this.esValido(players)){
+            return  (-1 * (cfg.getMejorPosibleResultadoTotal()));
+        }
+    
+    	//PENALIZAR POR REPETICION DE EQUIPO -> Por que penalizamos el mismo equipo? si es correcto y le damos un fitness negativo no lo va a descartar?
+    	//Player rp1 = playersMap.get(players.get(0)); 
+    	//Player rp2 = playersMap.get(players.get(1));
+    	//Player rp3 = playersMap.get(players.get(2));
+    	//Player rp4 = playersMap.get(players.get(3));
+    	//Player rp5 = playersMap.get(players.get(4));
     	
-    	Player[] vecJugadores = new Player[5];
+    	//Boolean mismoEquipo = rp1.getTeam().equals(rp2.getTeam())
+    	//&& rp2.getTeam().equals(rp3.getTeam())
+    	//&& rp3.getTeam().equals(rp4.getTeam())
+    	//&& rp4.getTeam().equals(rp5.getTeam());
     	
-    	Iterator it = players.iterator();
+    	//if(!mismoEquipo){
+    	//	Log.loguear("Aptitud: descartando por combinacion invalida ciclo " + cicloCorridaAptitud);
+    	//	cicloCorridaAptitud++;
+    	//	//tirarlo abajo totalmente
+        //  	//Seria el opuesto del mejor resultado
+    	//	return  (-1 * (cfg.getMejorPosibleResultadoTotal()));
+    	//}
     	
-    	for(int i=0;i<cfg.getTamanioEquipo() && it.hasNext();i++) { 
-    		
-    		Player p = (Player)it.next();
-    		
-    		/********************************************************
-        	 * SITUACIONES INDESEABLES DESCARTARLAS POR COMPLETO
-        	 ********************************************************/
-        	//PENALIZAR POR EQUIPO INCOMPLETO
-    		if(p == null || (p != null && p.getId() == null)) {
-    			Log.loguear("Aptitud: descartando por combinacion invalida ciclo " + cicloCorridaAptitud);
-    			cicloCorridaAptitud++;
-    			//tirarlo abajo totalmente
-    			//Seria el opuesto del mejor resultado
-    			return  (-1 * (cfg.getMejorPosibleResultadoTotal()));
-    		}
-    		
-    		vecJugadores[i] = playersMap.get(Conversion.enteroBase10AStringBase2(p.getId()));
-    		
-        	//PENALIZAR POR EQUIPO INCOMPLETO
-    		if(vecJugadores[i] == null) {
-    			Log.loguear("Aptitud: descartando por combinacion invalida ciclo " + cicloCorridaAptitud);
-    			cicloCorridaAptitud++;
-    			//tirarlo abajo totalmente
-    			//Seria el opuesto del mejor resultado
-    			return  (-1 * (cfg.getMejorPosibleResultadoTotal()));
-    		}
-    		i++;
-    	}
-    	
-    	//PENALIZAR POR REPETICION DE EQUIPO
-    	Player rp1 = playersMap.get(Conversion.enteroBase10AStringBase2(vecJugadores[0].getId())); 
-    	Player rp2 = playersMap.get(Conversion.enteroBase10AStringBase2(vecJugadores[1].getId()));
-    	Player rp3 = playersMap.get(Conversion.enteroBase10AStringBase2(vecJugadores[2].getId()));
-    	Player rp4 = playersMap.get(Conversion.enteroBase10AStringBase2(vecJugadores[3].getId()));
-    	Player rp5 = playersMap.get(Conversion.enteroBase10AStringBase2(vecJugadores[4].getId()));
-    	
-    	Boolean mismoEquipo = rp1.getTeam().equals(rp2.getTeam())
-    	&& rp2.getTeam().equals(rp3.getTeam())
-    	&& rp3.getTeam().equals(rp4.getTeam())
-    	&& rp4.getTeam().equals(rp5.getTeam());
-    	
-    	if(!mismoEquipo){
-    		Log.loguear("Aptitud: descartando por combinacion invalida ciclo " + cicloCorridaAptitud);
-    		cicloCorridaAptitud++;
-    		//tirarlo abajo totalmente
-    		//Seria el opuesto del mejor resultado
-    		return  (-1 * (cfg.getMejorPosibleResultadoTotal()));
-    	}
-    	
-    	Integer points = 0;
+    	Integer fitnessValue = 0;
         
         for(Player p: players) {
-        	/********************************************************
-        	 * SITUACIONES DESEABLES, POTENCIALES CANDIDATOS
-        	 ********************************************************/
-        	//EVALUAR PUNTOS
-        	Player realPlayer = playersMap.get(Conversion.enteroBase10AStringBase2(p.getId()));
-            points += realPlayer.getOverallPoints().intValue();
+            /********************************************************
+            * SITUACIONES DESEABLES, POTENCIALES CANDIDATOS
+            ********************************************************/
+            fitnessValue += p.getOverallPoints().intValue();
         	
-            //EVALUAR ALTURA
-            points += realPlayer.getHeight().intValue();
+            //EVALUAR ALTURA, evaluada al 50%
+            fitnessValue += p.getHeight().intValue() * ( 1 / 2 ) ;
         }
         
-        Log.loguear("Aptitud: puntos obtenidos: " + points + " , ciclo " + cicloCorridaAptitud);
+        Log.loguear("Aptitud: puntos obtenidos: " + fitnessValue + " , ciclo " + cicloCorridaAptitud);
         cicloCorridaAptitud++;
-        return points;
+        return fitnessValue;
     }
 
     public static void main(String[] args) {
@@ -151,14 +126,23 @@ public class App {
         // 3.) Create the execution environment.
         Engine<BitGene, Integer> engine = Engine
                 .builder(app::eval, gtf)
-              //Experimental 1
-                .populationSize(cfg.getTamanioPoblacion())
+                //Experimental 1
+                //.populationSize(100000)
                 //Experimental 2
+                .maximizing()
+                //.offspringFraction(0.7)
+                .constraint(Constraint.of(
+                        phenotype -> {
+                            List<Player> players = Conversion.chromosomeToPlayers(playersMap,phenotype.genotype());
+                            return app.esValido(players);
+                        }
+                ))
                 .survivorsSelector(new RouletteWheelSelector <>())
                 .offspringSelector(new TournamentSelector <>())
-                .alterers(new Mutator <>(0.55) ,new SinglePointCrossover <>(0.06) )
+                //.alterers(new Mutator <>(0.55) ,new )
+                .maximalPhenotypeAge(10)
                 //probar este
-                //.optimize(Optimize.MAXIMUM)
+                .optimize(Optimize.MAXIMUM)
                 .build();
         
         final EvolutionStatistics <Integer , ?>
@@ -170,7 +154,9 @@ public class App {
         // 4.) Start the execution (evolution) and
         //     collect the result.
         Genotype<BitGene> result = engine.stream()
-                .limit(cfg.getMaximoCorridas())
+                .limit(Limits.byFitnessThreshold(494))
+                //.limit(5000)
+                //.limit(cfg.getMaximoCorridas())
                 // Update  the  evaluation  statistics  after each  generation
                 .peek(statistics)
                 .collect(EvolutionResult.toBestGenotype());
@@ -186,11 +172,15 @@ public class App {
         for(Player p:players) {
         	if(p != null && p.getId() != null) {
         		Player realPlayer = playersMap.get(Conversion.enteroBase10AStringBase2(p.getId()));
-        		var line = realPlayer.getName() 
-        				+ " - " 
-        				+ realPlayer.getOverallPoints().toString()
+        		var line = p.getName() 
+        				+ " - Puntos: " 
+        				+ p.getOverallPoints().toString()
+        				+ " - Altura: "
+                                        + p.getHeight().toString()
         				+ " - "
-        				+ realPlayer.getTeam();
+        				+ p.getTeam()
+                                        + " - Posiciones: "
+        				+ p.getPrimaryPosition() + "/" + p.getSecondaryPosition();
                 System.out.println(line + "\n");
         	}
         }
@@ -207,7 +197,56 @@ public class App {
         System.out.println("TERMINO EL PROCESO: " + new SimpleDateFormat("hh:mm:ss dd/MM/YYYY").format(new Date()));
         
     }
-
+    
+    
+    private boolean esValido(List<Player> players){
+        //Verificar que sean 5 jugadores validos
+        for(Player p:players){
+           if(p == null || (p != null && p.getId() == null)) {
+               return false;
+           }
+        }
+        
+        Set<String> posicionesNecesarias = new HashSet<String>();
+        posicionesNecesarias.add("C");
+        posicionesNecesarias.add("PG");
+        posicionesNecesarias.add("SG");
+        posicionesNecesarias.add("SF");
+        posicionesNecesarias.add("PF");
+        
+        //Verificar que se cumplan 5 posiciones distintas, 5 jugadores distintos y 5 equipos distintos
+        Set<String> equiposSet = new HashSet<String>();
+        Set<String> posicionesSet = new HashSet<String>(); 
+        Set<Integer> jugadoresSet = new HashSet<Integer>(); 
+        
+        players.stream().forEach(p -> {
+            equiposSet.add(p.getTeam());
+            
+            //Armo un Set de Posiciones que pueden ser cubiertas por los jugadores
+            if(posicionesSet.contains(p.getPrimaryPosition())){
+                if(!p.getSecondaryPosition().equals("")){
+                    posicionesSet.add(p.getSecondaryPosition());
+                } 
+            }else{
+               posicionesSet.add(p.getPrimaryPosition());
+            }
+            
+            jugadoresSet.add(p.getId());
+        });
+        
+        //Si los jugadores son menores que 5, o los equipos estan repetidos (son menores que 5)
+        if(jugadoresSet.size() < 5 || equiposSet.size() < 5){
+            return false;
+        }
+        
+        //Si los jugadores cubren las 5 posiciones, es correcto
+        if(!posicionesSet.containsAll(posicionesNecesarias)){
+            return false;
+        }
+        
+        return true;
+    }
+    
     private static boolean stopCriteria() {
     	
     	

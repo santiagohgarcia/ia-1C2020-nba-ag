@@ -39,33 +39,37 @@ public class Conversion {
         int index = 0;
 
         List<Player> players = new ArrayList<>();
-
-        while (index <= chromosomeLength) {
-
-            var playerBits = chromosome.instances().skip(index).limit(bitsPerPlayer).collect(Collectors.toList());
-
-            var playersBinaryString = "";
-
-            for (int i = 0; i < playerBits.size(); i++) {
-                if (playerBits.get(i).gene().bit()) {
-                    playersBinaryString += "1";
-                } else {
-                    playersBinaryString += "0";
-                }
-            }
-
-            //int playerId = Integer.parseInt(playersBinaryString, 2);
-
-            //players.add(playersRepository.getPlayerById(playerId));
-            players.add(playersMap.get(playersBinaryString));
-             
-
-            index += bitsPerPlayer;
+        
+        var chromosomeBitString = chromosome.toString().replace("|", "").substring(1);
+        var playersBitStrings = splitInParts(chromosomeBitString, bitsPerPlayer);
+        
+        for(String playerBitString:playersBitStrings){
+         players.add(playersMap.get(playerBitString));
         }
 
         return players;
     }
     
+    public static String[] splitInParts(String s, int partLength)
+    {
+        int len = s.length();
+
+        // Number of parts
+        int nparts = (len + partLength - 1) / partLength;
+        String parts[] = new String[nparts];
+
+        // Break into parts
+        int offset= 0;
+        int i = 0;
+        while (i < nparts)
+        {
+            parts[i] = s.substring(offset, Math.min(offset + partLength, len));
+            offset += partLength;
+            i++;
+        }
+
+        return parts;
+    }
 	
     public static String enteroBase10AStringBase2(Integer entero) {
     	return rellenarCeros(Integer.toBinaryString(entero)); 
