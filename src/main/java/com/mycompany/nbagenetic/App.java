@@ -58,7 +58,16 @@ public class App {
             return  (-1 * (cfg.getMejorPosibleResultadoTotal()));
         }
     	
-    	Integer fitnessValue = 0;
+    	Integer fitnessValue = this.getFitness(players);
+        
+        Log.loguear("Aptitud: puntos obtenidos: " + fitnessValue + " , ciclo " + cicloCorridaAptitud);
+        cicloCorridaAptitud++;
+        return fitnessValue;
+    }
+    
+    private Integer getFitness(List<Player> players){
+    
+        Integer fitnessValue = 0;
         
         for(Player p: players) {
             /********************************************************
@@ -70,11 +79,8 @@ public class App {
             fitnessValue += ( p.getHeight().intValue() / 2 ) ;
         }
         
-        Log.loguear("Aptitud: puntos obtenidos: " + fitnessValue + " , ciclo " + cicloCorridaAptitud);
-        cicloCorridaAptitud++;
         return fitnessValue;
     }
-    
         
     private boolean esValido(List<Player> players){
         //Verificar que sean 5 jugadores validos
@@ -173,8 +179,7 @@ public class App {
     }
 
     public static void main(String[] args) {
-
-    	System.out.println("COMIENZA EL PROCESO: " + new SimpleDateFormat("hh:mm:ss dd/MM/YYYY").format(new Date()));
+        var dateInicio = new Date();
     	
     	cfg = new Configuracion();
     	try {
@@ -200,23 +205,15 @@ public class App {
         // 3.) Create the execution environment.
         Engine<BitGene, Integer> engine = Engine
                 .builder(app::eval, gtf)
-                //Experimental 1
-                .populationSize(1000)
-                //Experimental 2
-                .maximizing()
-                //.offspringFraction(0.7)
                 .constraint(Constraint.of(
                         phenotype -> {
                             List<Player> players = Conversion.chromosomeToPlayers(playersMap,phenotype.genotype());
                             return app.esValido(players);
                         }
                 ))
-                .survivorsSelector(new RouletteWheelSelector <>())
-                .offspringSelector(new TournamentSelector <>())
-                //.alterers(new Mutator <>(0.55) ,new )
-                .maximalPhenotypeAge(10)
-                //probar este
-                .optimize(Optimize.MAXIMUM)
+                .survivorsSelector(new TournamentSelector<>(3))
+                .alterers(new Mutator<>(0.15), new SinglePointCrossover<>(0.5))
+                .maximalPhenotypeAge(100)
                 .build();
         
         final EvolutionStatistics <Integer , ?>
@@ -242,6 +239,9 @@ public class App {
 
         Log.loguear("Cantidad de players de resultados finales: " + (players != null ? players.size():"0"));
         
+        System.out.println("+---------------------------------------------------------------------------+");
+        System.out.println("PUNTAJE TOTAL: " + app.getFitness(players));
+        System.out.println("+---------------------------------------------------------------------------+");
         
         for(Player p:players) {
         	if(p != null && p.getId() != null) {
@@ -255,9 +255,22 @@ public class App {
         				+ p.getTeam()
                                         + " - Posiciones: "
         				+ p.getPrimaryPosition() + "/" + p.getSecondaryPosition();
-                System.out.println(line + "\n");
+                      System.out.println(line + "\n");
+             
         	}
         }
+        
+       
+        System.out.println("+---------------------------------------------------------------------------+");
+        System.out.println("COMIENZA EL PROCESO: " + new SimpleDateFormat("hh:mm:ss dd/MM/YYYY").format(dateInicio));
+        System.out.println("+---------------------------------------------------------------------------+"); 
+        var dateFinal = new Date();
+        System.out.println("TERMINO EL PROCESO: " + new SimpleDateFormat("hh:mm:ss dd/MM/YYYY").format(dateFinal));
+        System.out.println("+---------------------------------------------------------------------------+");
+        long seconds = (dateFinal.getTime()-dateInicio.getTime())/1000;
+        System.out.println("TIEMPO TOTAL: " + seconds + "s");
+        System.out.println("+---------------------------------------------------------------------------+");
+        System.out.println(statistics);
         
 //        for (int i = 0; i < players.size(); i++) {
 //            Player p = playersMap.get(players.get(i));
