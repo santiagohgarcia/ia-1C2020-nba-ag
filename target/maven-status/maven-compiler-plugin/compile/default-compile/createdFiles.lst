@@ -1,3 +1,9 @@
+com\mycompany\nbagenetic\domain\Team.class
 com\mycompany\nbagenetic\App.class
+com\mycompany\nbagenetic\configuracion\Configuracion.class
+com\mycompany\nbagenetic\limit\NBAGeneticSteadyFitnessLimit.class
+com\mycompany\nbagenetic\log\Log.class
+com\mycompany\nbagenetic\conversion\Conversion.class
 com\mycompany\nbagenetic\domain\Player.class
+com\mycompany\nbagenetic\repository\PlainTextUtils.class
 com\mycompany\nbagenetic\repository\PlayersRepository.class
